@@ -1,2 +1,119 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+CREATE VIEW Artist_and_Albums AS 
+SELECT * FROM artists
+LEFT JOIN albums
+ON artists.ArtistId = albums.ArtistId;
+
+
+-- Who spent the most?
+SELECT Customers.CustomerId, Customers.FirstName, Customers.LastName, SUM(Invoices.total)
+FROM customers
+LEFT JOIN invoices
+ON customers.CustomerId = invoices.CustomerId
+GROUP BY customers.CustomerId
+ORDER BY 4 DESC
+
+-- Who purchased the most tracks or spent the most money?
+SELECT *, COUNT(invoice_items.Quantity), SUM(invoices.Total)
+FROM invoices
+LEFT JOIN invoice_items
+ON invoices.invoiceID = invoice_items.InvoiceId
+GROUP BY invoices.CustomerId
+ORDER BY SUM(invoices.total) DESC
+
+
+-- Joins playlists, playlist track, tracks, albums and artists
+SELECT playlists.Name AS Playlist_Name, artists.Name AS Artist_Name, tracks.Name AS Track_Name, tracks.UnitPrice, albums.Title AS Album_Title
+FROM playlists
+LEFT JOIN playlist_track
+ON playlists.PlaylistId = playlist_track.PlaylistId
+LEFT JOIN tracks
+ON playlist_track.TrackId = tracks.TrackId
+LEFT JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON albums.ArtistId = artists.ArtistId
+ORDER BY artists.name ASC
+
+
+SELECT *,
+strftime('%Y', InvoiceDate) as "Year",
+strftime('%m', InvoiceDate) as "Month", 
+strftime('%d', InvoiceDate) as "Day"
+FROM invoices
+
+
+-- Table joining artists, albums and tracks
+SELECT * 
+FROM invoice_items
+LEFT JOIN tracks
+ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON
+artists.ArtistId = albums.ArtistId
+
+
+-- Tells me top 10 songs 
+SELECT  tracks.Name AS "Track Name", albums.title AS "Album Name", artists.Name AS "Artist Name", invoice_items.UnitPrice, invoice_items.quantity, COUNT(tracks.Name)
+FROM invoice_items
+LEFT JOIN tracks
+ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON
+artists.ArtistId = albums.ArtistId
+GROUP BY tracks.Name
+ORDER BY 6 DESC
+LIMIT 10
+
+
+-- Tells me top 10 artists 
+SELECT  tracks.Name AS "Track Name", albums.title AS "Album Name", artists.Name AS "Artist Name", invoice_items.UnitPrice, invoice_items.quantity, COUNT(artists.Name)
+FROM invoice_items
+LEFT JOIN tracks
+ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON
+artists.ArtistId = albums.ArtistId
+GROUP BY artists.Name
+ORDER BY 6 DESC
+LIMIT 10
+
+
+-- How much money was spent on top artists
+SELECT  artists.Name AS "Artist Name", invoice_items.UnitPrice, invoice_items.quantity, ROUND(SUM(tracks.UnitPrice), 2)
+FROM invoice_items
+LEFT JOIN tracks
+ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON
+artists.ArtistId = albums.ArtistId
+GROUP BY artists.name
+ORDER BY 4 DESC
+LIMIT 10
+
+SELECT  *
+FROM invoice_items
+LEFT JOIN tracks
+ON invoice_items.TrackId = tracks.TrackId
+LEFT JOIN albums
+ON albums.AlbumId = tracks.AlbumId
+LEFT JOIN artists
+ON
+artists.ArtistId = albums.ArtistId
+
+-- Which media file is the most popular?
+SELECT media_types.Name, COUNT(media_types.name)
+FROM invoice_items
+LEFT JOIN tracks
+ON tracks.TrackId = invoice_items.TrackId
+LEFT JOIN media_types
+ON media_types.MediaTypeId = tracks.MediaTypeId
+GROUP BY media_types.name
+ORDER BY 2 DESC
